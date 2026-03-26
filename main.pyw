@@ -23,13 +23,19 @@ MAX_POWER = 3_000_000  # Watt
 
 # ====== LUFTDICHTE ======
 def air_density(temp_c, humidity, pressure_hpa):
-    T = temp_c + 273.15
-    phi = humidity / 100.0
-    P = pressure_hpa * 100
-    p_sat = 610.78 * math.exp(17.27 * temp_c / (temp_c + 237.3))
-    p_v = phi * p_sat
-    p_d = P - p_v
-    return p_d / (287.05 * T) + p_v / (461.5 * T)
+    """
+    Berechnet die Luftdichte ρ [kg/m³] unter Berücksichtigung von Temperatur, Luftfeuchtigkeit und Druck.
+    temp_c: Temperatur in Grad Celsius
+    humidity: relative Luftfeuchtigkeit in %
+    pressure_hpa: Luftdruck in hPa
+    """
+    T = temp_c + 273.15  # Temperatur in Kelvin
+    phi = humidity / 100.0  # relative Luftfeuchtigkeit in Bruch
+    P = pressure_hpa * 100  # Druck von hPa zu Pa umrechnen
+    p_sat = 610.78 * math.exp(17.27 * temp_c / (temp_c + 237.3))  # Sättigungsdampfdruck
+    p_v = phi * p_sat  # Partialdruck des Wasserdampfs
+    p_d = P - p_v      # Partialdruck der trockenen Luft
+    return p_d / (287.05 * T) + p_v / (461.5 * T)  # Luftdichte ρ berechnen
 
 # ====== WETTERDATEN ======
 def get_weather(city):
@@ -80,16 +86,24 @@ def filter_period(data, period):
 
 # ====== LEISTUNG ======
 def calculate_power(v, rho, area):
+    """
+    Berechnet die Leistung einer Windturbine [Watt] basierend auf Windgeschwindigkeit v [m/s],
+    Luftdichte rho [kg/m³] und Rotorfläche area [m²].
+    Berücksichtigt Cut-in, Rated und Cut-off Geschwindigkeiten sowie maximale Leistung.
+    """
     if v < CUT_IN or v > CUT_OFF:
-        return 0
+        return 0  # Kein Betrieb unter Cut-in oder über Cut-off
     elif v <= RATED_SPEED:
+        # Leistung proportional zu v³ im Bereich unter Nennwindgeschwindigkeit
         return 0.5 * rho * area * C_P * v**3
     else:
-        return MAX_POWER
+        # Leistung ab Nennwindgeschwindigkeit konstant (Rated Power), max. MAX_POWER
+        rated_power = 0.5 * rho * area * C_P * RATED_SPEED**3
+        return min(rated_power, MAX_POWER)
 
 # ====== PDF BERICHT ======
 def generate_pdf(city, period, data, times, energy, total_energy, fake=False):
-    # Определяем базовую директорию рядом с exe или скриптом
+    # Bestimmt das Basisverzeichnis neben der exe oder dem Skript
     if getattr(sys, 'frozen', False):
         base_path = os.path.dirname(sys.executable)
     else:
