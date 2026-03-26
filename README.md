@@ -1,42 +1,49 @@
-Windturbinen-Bericht Generator
-==============================
+# Windturbinen-Bericht Generator
 
-Beschreibung:
--------------
-Dieses kleine Programm erstellt PDF-Berichte über die erzeugte Energie
-einer Windturbine basierend auf Wetterdaten (real oder simuliert).
+## Beschreibung
+Dieses Programm erstellt PDF-Berichte über die erzeugte Energie einer Windturbine basierend auf Wetterdaten (real oder simuliert).  
+Die Berechnung basiert auf physikalischen Modellen der Windenergie und berücksichtigt unter anderem Windgeschwindigkeit, Luftdichte sowie den Wirkungsgrad der Turbine.
 
-Funktionen:
------------
-- Eingabe der Stadt
-- Auswahl des Zeitraums: Heute, 3 Tage, 5 Tage
-- Berechnung der erzeugten Energie basierend auf Windgeschwindigkeit, Luftdichte etc.
-- Speicherung des Berichts als PDF in der Unterordner "WindReports"
-- Automatische Erstellung des Ordners "WindReports", falls er nicht existiert
-- Mehrseitige PDF, wenn die Daten nicht auf eine Seite passen
-- Nutzung von simulierten Daten, falls API-Daten nicht verfügbar sind
+Die Luftdichte wird unter Berücksichtigung von Temperatur, Luftfeuchtigkeit und Luftdruck berechnet, was eine realistischere Simulation ermöglicht.
 
-Installation und Start:
-----------------------
-1. Stelle sicher, dass Python 3.x installiert ist
-2. Installiere die benötigten Pakete:
+Die Leistung der Windturbine wird mit der Standardformel der Windenergie berechnet und durch den Leistungsbeiwert (Cp) begrenzt. Dabei wird das physikalische Maximum gemäß dem Betz-Gesetz berücksichtigt.
+
+## Funktionen
+- Eingabe der Stadt  
+- Auswahl des Zeitraums: Heute, 3 Tage, 5 Tage  
+- Automatische Abfrage von Wetterdaten über API (OpenWeather)  
+- Fallback auf realistische Zufallsdaten bei API-Fehlern  
+- Berechnung der Luftdichte unter Berücksichtigung von:
+  - Temperatur  
+  - Luftfeuchtigkeit  
+  - Luftdruck  
+- Berechnung der Windleistung nach physikalischem Modell:  P=0.5⋅ρ⋅A⋅Cp​⋅v3  
+- Begrenzung der Leistung durch:
+  - Nennleistung (Rated Power)  
+  - Cut-in / Cut-off Bedingungen  
+- Berechnung der erzeugten Energie in kWh  
+- Erstellung eines mehrseitigen PDF-Berichts mit:
+  - Zusammenfassung  
+  - Graph (Energieverlauf)  
+  - Tabelle mit Wetterdaten und Energie  
+- Automatische Speicherung im Ordner **WindReports**  
+- Automatische Erstellung des Ordners, falls nicht vorhanden  
+- Dateiname enthält Zeitraum (z.B. `Berlin_3_Tage_26-03_28-03.pdf`)  
+
+### Optionale Datenbank-Anbindung
+- Speicherung der erzeugten Berichte in einer SQLite- oder CSV-Datenbank  
+- Möglichkeit, auf historische Berichte zuzugreifen (z.B. Berlin gestern vs. heute)  
+- Erleichtert Analyse über mehrere Zeiträume  
+- Tabellen könnten enthalten:
+  - Stadt  
+  - Zeitraum  
+  - Datum der Erstellung  
+  - Gesamtenergie (kWh)  
+  - Datenquelle (Real / Simuliert)  
+  - Pfad zur PDF-Datei  
+
+## Installation und Start
+1. Stelle sicher, dass Python 3.x installiert ist  
+2. Installiere die benötigten Pakete:  
+   ```bash
    pip install requests matplotlib
-3. Öffne die Datei main.pyw per Doppelklick, kein Konsolenfenster wird angezeigt
-4. Gib die Stadt ein und wähle den Zeitraum aus
-5. Klicke auf "PDF Bericht erstellen"
-6. Die PDF wird automatisch in WindReports gespeichert und geöffnet
-
-Hinweise:
----------
-- Falls OpenWeatherMap API nicht erreichbar ist, werden Zufallsdaten genutzt
-- Die PDF-Datei wird benannt nach Stadt und Zeitraum, z.B. berlin_3_Tage_20260323_1425.pdf
-- Nur deutsche Sprache unterstützt
-
-Windturbinen-Parameter:
------------------------
-- Rotorradius: 50 m
-- Wirkungsgrad (Cp): 0.45
-- Startgeschwindigkeit (Cut-in): 3 m/s
-- Nennwindgeschwindigkeit (Rated): 12 m/s
-- Abschaltgeschwindigkeit (Cut-off): 25 m/s
-- Maximale Leistung: 3 MW
